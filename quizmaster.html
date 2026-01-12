@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster - Pattao NHS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body { font-family: 'Inter', sans-serif; background:#fffaf7; }
+.correct { color: green; font-weight: bold; }
+.incorrect { color: red; font-weight: bold; }
+.score-box {
+  background:#f0fdf4;
+  border:2px solid #16a34a;
+  padding:16px;
+  margin-top:20px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body class="p-6">
+
+<h1 class="text-3xl font-bold text-center text-red-800">QuizMaster</h1>
+<p class="text-center mb-6">Pattao National High School</p>
+
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+
+<!-- REQUIRED INFO -->
+<label class="block mb-3 font-semibold">
+Teacher Name:
+<input id="teacherName" class="border w-full p-2 mt-1">
+</label>
+
+<label class="block mb-3 font-semibold">
+Subject:
+<input id="subject" class="border w-full p-2 mt-1">
+</label>
+
+<label class="block mb-6 font-semibold">
+Student Name:
+<input id="studentName" class="border w-full p-2 mt-1">
+</label>
+
+<form id="quizForm"></form>
+
+<!-- SUBMIT BUTTON AT BOTTOM -->
+<button id="submitBtn" onclick="submitQuiz()"
+class="mt-6 w-full bg-red-700 text-white py-3 rounded text-lg">
+Submit Answers
+</button>
+
+<!-- SCORE DISPLAY -->
+<div id="scoreBox" class="score-box hidden"></div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+{q:"Which planet is known as the Red Planet?",opts:["Earth","Mars","Jupiter","Venus"],ans:1},
+{q:"What gas do plants absorb for photosynthesis?",opts:["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"],ans:2},
+{q:"Which body part controls voluntary actions?",opts:["Heart","Lungs","Brain","Liver"],ans:2},
+{q:"Boiling point of water at sea level?",opts:["50°C","75°C","100°C","150°C"],ans:2},
+{q:"Vitamin produced from sunlight?",opts:["A","B","C","D"],ans:3},
+{q:"Force pulling objects to Earth?",opts:["Magnetism","Friction","Gravity","Pressure"],ans:2},
+{q:"Basic unit of life?",opts:["Tissue","Organ","Cell","System"],ans:2},
+{q:"Metal liquid at room temperature?",opts:["Iron","Mercury","Aluminum","Copper"],ans:1},
+{q:"Organ used for breathing?",opts:["Kidney","Stomach","Heart","Lungs"],ans:3},
+{q:"Which plant part makes food?",opts:["Root","Stem","Flower","Leaf"],ans:3}
+];
+
+const form = document.getElementById("quizForm");
+
+QUESTIONS.forEach((q,i)=>{
+let html = `<p class="font-semibold mt-4">${i+1}. ${q.q}</p>`;
+q.opts.forEach((opt,j)=>{
+html += `
+<label class="block">
+<input type="radio" name="q${i}" value="${j}"> ${opt}
+</label>`;
+});
+form.innerHTML += `<div>${html}</div>`;
+});
+
+function submitQuiz(){
+const teacher = document.getElementById("teacherName").value.trim();
+const subject = document.getElementById("subject").value.trim();
+const student = document.getElementById("studentName").value.trim();
+
+if(!teacher || !subject || !student){
+alert("Please complete Teacher, Subject, and Student Name.");
+return;
+}
+
+let score = 0;
+
+QUESTIONS.forEach((q,i)=>{
+let selected = document.querySelector(`input[name="q${i}"]:checked`);
+if(selected){
+if(parseInt(selected.value) === q.ans){
+score++;
+selected.parentElement.classList.add("correct");
+}else{
+selected.parentElement.classList.add("incorrect");
+}
+}
+});
+
+const percent = Math.round((score / QUESTIONS.length) * 100);
+
+// SHOW SCORE AFTER ANSWERING
+const scoreBox = document.getElementById("scoreBox");
+scoreBox.classList.remove("hidden");
+scoreBox.innerHTML = `
+Score: ${score} / ${QUESTIONS.length}<br>
+Percentage: ${percent}%
+`;
+
+// DISABLE RESUBMISSION
+document.getElementById("submitBtn").disabled = true;
+document.getElementById("submitBtn").classList.add("opacity-50");
+
+// SAVE RESULTS
+let results = JSON.parse(localStorage.getItem("quizResults")) || [];
+results.push({
+teacher, subject, student,
+score, percent,
+date: new Date().toLocaleString()
+});
+localStorage.setItem("quizResults", JSON.stringify(results));
+}
+</script>
+
+</body>
+</html>
